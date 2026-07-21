@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>管理后台 — GH报单系统</title>
+<link rel="stylesheet" href="/style.css">
+</head>
+<body>
+<header class="header"><h1>GH发家致富 · 管理后台</h1>
+<div class="user-area"><span id="displayRole" class="role-badge"></span><span id="displayName"></span><button class="btn-logout" id="btnLogout">退出</button></div>
+</header>
+<div class="app">
+<div class="tabs">
+<button class="tab-btn active" data-tab="orders">订单管理</button>
+<button class="tab-btn" data-tab="reviews">审核中心</button>
+<button class="tab-btn" data-tab="members">用户管理</button>
+<button class="tab-btn" data-tab="stats">数据统计</button>
+</div>
+
+<!-- Orders Tab -->
+<div id="tab-orders" class="tab-panel">
+<div class="stats-row"><div class="stat-card spend"><div class="stat-label">总花费</div><div class="stat-value" id="sSpend">0</div></div><div class="stat-card sold"><div class="stat-label">总卖出</div><div class="stat-value" id="sSold">0</div></div><div class="stat-card profit"><div class="stat-label">净利润</div><div class="stat-value" id="sProfit">0</div></div><div class="stat-card orders"><div class="stat-label">订单数</div><div class="stat-value" id="sOrders">0</div></div><div class="stat-card members"><div class="stat-label">成员数</div><div class="stat-value" id="sMembers">0</div></div></div>
+<div class="toolbar"><input type="text" id="osearch" placeholder="搜索商品/单号..."><select id="oplatform"><option value="">全部平台</option></select><select id="ostatus"><option value="">全部状态</option></select><select id="ouser"><option value="">全部用户</option></select><button class="btn btn-primary" id="oaddBtn">+ 新增订单</button><button class="btn btn-default" id="oexport">导出CSV</button></div>
+<div class="table-wrap"><table><thead><tr><th>用户</th><th>平台</th><th>商品</th><th>花费</th><th>卖出</th><th>利润</th><th>单号</th><th>状态</th><th>时间</th><th>操作</th></tr></thead><tbody id="otbody"></tbody></table><div class="empty-state" id="oempty" style="display:none"><div class="empty-icon"></div><div>暂无订单</div></div></div>
+<div class="pagination" id="opagination"></div>
+</div>
+
+<!-- Reviews Tab -->
+<div id="tab-reviews" class="tab-panel" style="display:none">
+<div class="table-wrap"><table><thead><tr><th>用户名</th><th>身份证正面</th><th>身份证反面</th><th>注册时间</th><th>状态</th><th>操作</th></tr></thead><tbody id="rtbody"></tbody></table><div class="empty-state" id="rempty" style="display:none"><div class="empty-icon"></div><div>暂无待审核用户</div></div></div>
+</div>
+
+<!-- Members Tab -->
+<div id="tab-members" class="tab-panel" style="display:none">
+<div style="margin-bottom:12px"><button class="btn btn-primary" id="maddBtn">+ 添加成员</button></div>
+<div class="user-cards" id="mcards"></div>
+</div>
+
+<!-- Stats Tab -->
+<div id="tab-stats" class="tab-panel" style="display:none">
+<div class="table-wrap"><table><thead><tr><th>用户</th><th>订单数</th><th>总花费</th><th>总卖出</th><th>净利润</th><th>操作</th></tr></thead><tbody id="sttbody"></tbody></table></div>
+</div>
+</div>
+
+<!-- Add Member Modal -->
+<div class="modal-overlay" id="memberModal" style="display:none">
+<div class="modal"><div class="modal-header"><h2>添加成员</h2><button class="modal-close">&times;</button></div>
+<div class="modal-body"><form id="memberForm"><div class="form-group"><label>用户名 <span class="required">*</span></label><input type="text" id="mUser" required></div><div class="form-group"><label>密码 <span class="required">*</span></label><input type="password" id="mPass" required></div><div class="form-actions"><button type="button" class="btn btn-default btn-mcancel">取消</button><button type="submit" class="btn btn-primary">添加</button></div></form></div></div>
+</div>
+
+<!-- Order Modal (same as client) -->
+<div class="modal-overlay" id="orderModal" style="display:none">
+<div class="modal"><div class="modal-header"><h2 id="modalTitle">编辑订单</h2><button class="modal-close">&times;</button></div>
+<div class="modal-body"><form id="orderForm"><div class="form-group"><label>平台 *</label><select id="ofPlatform" required></select></div><div class="form-group"><label>商品名称 *</label><input type="text" id="ofProduct" required></div><div class="form-group"><label>规格</label><input type="text" id="ofSpec"></div><div class="form-row"><div class="form-group" style="flex:1"><label>进货价 *</label><input type="number" id="ofPrice" step="0.01" required></div><div class="form-group" style="flex:1"><label>优惠券</label><input type="number" id="ofCoupon" step="0.01" value="0"></div></div><div class="auto-calc" id="actualDisplay">实付金额：0.00</div><div class="form-row"><div class="form-group" style="flex:1"><label>卖出价</label><input type="number" id="ofSellingPrice" step="0.01"></div><div class="form-group" style="flex:1"><label>卖出平台</label><select id="ofSellingPlatform"></select></div></div><div class="form-group"><label>快递单号 *</label><input type="text" id="ofTracking" class="tracking" required></div><div class="form-grid"><div class="form-group"><label>物流状态</label><select id="ofLogistics"></select></div><div class="form-group"><label>订单状态</label><select id="ofStatus"></select></div></div><div class="form-grid"><div class="form-group"><label>买家姓名</label><input type="text" id="ofBuyerName"></div><div class="form-group"><label>买家电话</label><input type="text" id="ofBuyerContact"></div></div><div class="form-group"><label>结算状态</label><select id="ofSettlement"></select></div><div class="form-group"><label>备注</label><input type="text" id="ofNote"></div><div class="form-actions"><button type="button" class="btn btn-default btn-cancel">取消</button><button type="submit" class="btn btn-primary">保存订单</button></div></form></div></div>
+</div>
+
+<!-- Confirm Dialog -->
+<div class="confirm-overlay" id="confirmDlg" style="display:none"><div class="confirm-box"><p id="confirmMsg"></p><div class="confirm-actions"><button class="btn btn-default btn-cf-no">取消</button><button class="btn btn-danger btn-cf-yes">确认</button></div></div></div>
+<div class="id-card-preview" id="idPreview" style="display:none"><img id="idPreviewImg"></div>
+<div id="toast" class="toast" style="display:none"></div>
+
+<script src="/app.js"></script>
+<script src="/admin.js"></script>
+</body>
+</html>

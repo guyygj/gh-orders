@@ -1,0 +1,5 @@
+node_modules/
+gh_orders.db
+gh_orders.db-shm
+gh_orders.db-wal
+public/uploads/id_cards/*

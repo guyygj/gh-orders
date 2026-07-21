@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>GH发家致富 · 撸货报单系统</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<!-- Login Page -->
+<div id="loginPage" class="login-page" style="display:none">
+  <div class="login-card">
+    <h1>GH 发家致富</h1>
+    <div class="subtitle">撸货报单系统</div>
+    <form id="loginForm">
+      <div class="form-group"><input type="text" id="loginUser" placeholder="用户名 / 手机号" required></div>
+      <div class="form-group"><input type="password" id="loginPass" placeholder="密码" required></div>
+      <div id="loginError" class="form-error"></div>
+      <button type="submit" class="btn-submit" id="btnLoginText">登 录</button>
+    </form>
+    <button class="toggle-link" id="toggleRegister">注册新账号</button>
+  </div>
+</div>
+
+<!-- Register Page -->
+<div id="registerPage" class="login-page" style="display:none">
+  <div class="login-card">
+    <h1>GH 发家致富</h1>
+    <div class="subtitle">注册新账号</div>
+    <form id="registerForm" enctype="multipart/form-data">
+      <div class="form-group"><input type="text" id="regUser" placeholder="用户名 / 手机号" required></div>
+      <div class="form-group"><input type="password" id="regPass" placeholder="密码" required></div>
+      <div class="form-group"><input type="password" id="regPass2" placeholder="确认密码" required></div>
+      <div class="form-group"><label>身份证正面</label><input type="file" id="regIdFront" accept="image/*"></div>
+      <div class="form-group"><label>身份证反面</label><input type="file" id="regIdBack" accept="image/*"></div>
+      <div id="regError" class="form-error"></div>
+      <button type="submit" class="btn-submit">注 册</button>
+    </form>
+    <button class="toggle-link" id="toggleLogin">已有账号？去登录</button>
+  </div>
+</div>
+
+<!-- Main App -->
+<div id="mainApp" style="display:none">
+  <header class="header">
+    <h1>GH发家致富 · 报单</h1>
+    <div class="user-area">
+      <span id="displayRole" class="role-badge"></span>
+      <span id="displayName"></span>
+      <button class="btn-logout" id="btnLogout">退出</button>
+    </div>
+  </header>
+
+  <div class="app">
+    <!-- Stats Row -->
+    <div class="stats-row">
+      <div class="stat-card spend"><div class="stat-label">总花费</div><div class="stat-value" id="statSpend">0</div></div>
+      <div class="stat-card sold"><div class="stat-label">总卖出</div><div class="stat-value" id="statSold">0</div></div>
+      <div class="stat-card profit"><div class="stat-label">净利润</div><div class="stat-value" id="statProfit">0</div></div>
+      <div class="stat-card orders"><div class="stat-label">订单数</div><div class="stat-value" id="statOrders">0</div></div>
+    </div>
+
+    <!-- Toolbar -->
+    <div class="toolbar">
+      <input type="text" id="searchInput" placeholder="搜索商品/单号...">
+      <select id="filterPlatform"><option value="">全部平台</option></select>
+      <select id="filterStatus"><option value="">全部状态</option></select>
+      <select id="sortBy"><option value="created_at">创建时间</option><option value="actual_payment">花费</option><option value="selling_price">卖出价</option></select>
+      <select id="sortOrder"><option value="DESC">降序</option><option value="ASC">升序</option></select>
+      <button class="btn btn-primary" id="btnAdd">+ 新增订单</button>
+      <button class="btn btn-default" id="btnExport">导出CSV</button>
+    </div>
+
+    <!-- Table -->
+    <div class="table-wrap" id="tableWrap">
+      <div id="orderCards" class="order-cards"></div>
+      <table><thead><tr>
+        <th>平台</th><th>商品</th><th>规格</th><th>花费</th><th>卖出</th><th>利润</th><th>单号</th><th>物流</th><th>状态</th><th>备注</th><th>操作</th>
+      </tr></thead><tbody id="orderTbody"></tbody></table>
+      <div class="empty-state" id="emptyState" style="display:none">
+        <div class="empty-icon"></div>
+        <div>暂无订单数据</div>
+      </div>
+    </div>
+
+    <div class="pagination" id="pagination"></div>
+  </div>
+</div>
+
+<!-- Order Modal -->
+<div class="modal-overlay" id="orderModal" style="display:none">
+  <div class="modal">
+    <div class="modal-header"><h2 id="modalTitle">新增订单</h2><button class="modal-close">&times;</button></div>
+    <div class="modal-body">
+      <form id="orderForm">
+        <div class="form-group"><label>平台 <span class="required">*</span></label><select id="ofPlatform" required></select></div>
+        <div class="form-group"><label>商品名称 <span class="required">*</span></label><input type="text" id="ofProduct" required></div>
+        <div class="form-group"><label>规格</label><input type="text" id="ofSpec"></div>
+        <div class="form-row"><div class="form-group" style="flex:1"><label>进货价 <span class="required">*</span></label><input type="number" id="ofPrice" step="0.01" required></div><div class="form-group" style="flex:1"><label>优惠券</label><input type="number" id="ofCoupon" step="0.01" value="0"></div></div>
+        <div class="auto-calc" id="actualDisplay">实付金额：0.00</div>
+        <div class="form-row"><div class="form-group" style="flex:1"><label>卖出价</label><input type="number" id="ofSellingPrice" step="0.01"></div><div class="form-group" style="flex:1"><label>卖出平台</label><select id="ofSellingPlatform"></select></div></div>
+        <div class="form-group"><label>快递单号 <span class="required">*</span></label><input type="text" id="ofTracking" class="tracking" required></div>
+        <div class="form-grid">
+          <div class="form-group"><label>物流状态</label><select id="ofLogistics"></select></div>
+          <div class="form-group"><label>订单状态</label><select id="ofStatus"></select></div>
+        </div>
+        <div class="form-grid">
+          <div class="form-group"><label>买家姓名</label><input type="text" id="ofBuyerName"></div>
+          <div class="form-group"><label>买家电话</label><input type="text" id="ofBuyerContact"></div>
+        </div>
+        <div class="form-group"><label>结算状态</label><select id="ofSettlement"></select></div>
+        <div class="form-group"><label>备注</label><input type="text" id="ofNote"></div>
+        <div class="form-actions">
+          <button type="button" class="btn btn-default btn-cancel">取消</button>
+          <button type="submit" class="btn btn-primary">保存订单</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- Confirm Dialog -->
+<div class="confirm-overlay" id="confirmDlg" style="display:none">
+  <div class="confirm-box"><p id="confirmMsg"></p><div class="confirm-actions"><button class="btn btn-default btn-cf-no">取消</button><button class="btn btn-danger btn-cf-yes">确认</button></div></div>
+</div>
+
+<div id="toast" class="toast" style="display:none"></div>
+
+<script src="app.js"></script>
+</body>
+</html>
