@@ -21,6 +21,9 @@ function cf(fn,msg){msg=msg||'确认操作？';$('#confirmMsg').textContent=msg;
 function init(){
   token=localStorage.getItem('gh_token');
   user=JSON.parse(localStorage.getItem('gh_user')||'null');
+  // 登录表单事件必须首屏就绑
+  var admForm = $('#adminLoginForm');
+  if(admForm) admForm.addEventListener('submit', handleAdminLogin);
   if(!token||!user||user.role!=='admin'){showAdminLogin();return}
   showAdminMain();
 }
