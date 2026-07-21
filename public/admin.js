@@ -1,27 +1,49 @@
 (function(){
-var $=function(s){return document.querySelector(s)};
-var API='/api';
-var token='',user=null;
-var currentPage=1,PAGE_SIZE=20;
-var platforms=['京东','淘宝','天猫','拼多多','抖音','快手','苏宁易购','唯品会','得物','小红书','闲鱼'];
-var statuses=['已下单','已发货','已签收','已卖出','已退货','已作废'];
-var logistics=['运输中','已揽收','派送中','已签收','退回中'];
-var settlements=['未结算','已结算'];
-
-// Util (self-contained)
-function fmtMoney(n){return Number(n||0).toLocaleString('zh-CN',{minimumFractionDigits:2,maximumFractionDigits:2})}
-function esc(s){return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')}
-function toast(msg,type){type=type||'success';var t=$('#toast');if(!t)return;t.textContent=msg;t.className='toast '+type;t.style.display='block';setTimeout(function(){t.style.display='none'},2000)}
-function fillSelect(id,arr){var sel=$('#'+id);if(sel)sel.innerHTML='<option value="">请选择</option>'+arr.map(function(v){return '<option>'+v+'</option>'}).join('')}
-function setVal(id,v){var el=$('#'+id);if(!el)return;if(el.tagName==='SELECT'){Array.from(el.options).forEach(function(o){if(o.value===v)o.selected=true});return}el.value=v}
-function debounce(fn,ms){var t;return function(){var th=this,args=arguments;clearTimeout(t);t=setTimeout(function(){fn.apply(th,args)},ms)}}
-function cf(fn,msg){msg=msg||'确认操作？';$('#confirmMsg').textContent=msg;$('#confirmDlg').style.display='flex';var y=$('#confirmDlg').querySelector('.btn-cf-yes');y.onclick=function(){fn();$('#confirmDlg').style.display='none'}}
-
-// Init
-function init(){
+varfunction init(){
   token=localStorage.getItem('gh_token');
   user=JSON.parse(localStorage.getItem('gh_user')||'null');
-  if(!token||!user||user.role!=='admin'){location.href='/';return}
+  if(!token||!user||user.role!=='admin'){
+    showAdminLogin();
+  }else{
+    showAdminMain();
+  }
+}
+function showAdminLogin(){
+  var m=document.querySelector('#adminMain');if(m)m.style.display='none';
+  var l=document.querySelector('#adminLogin');if(l)l.style.display='flex';
+}
+function showAdminMain(){
+  var l=document.querySelector('#adminLogin');if(l)l.style.display='none';
+  var m=document.querySelector('#adminMain');if(m)m.style.display='block';
+  document.querySelector('#displayName').textContent=user.username;
+  document.querySelector('#displayRole').textContent='管理员';
+  bindEvents();
+  loadGlobalStats();
+  loadOrdersTab();
+}
+async function handleAdminLogin(e){
+  e.preventDefault();
+  var body={username:document.querySelector('#adminLoginUser').value,password:document.querySelector('#adminLoginPass').value};
+  try{
+    var res=await fetch(API+'/login',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});
+    var d=await res.json();
+    if(!res.ok){document.querySelector('#adminLoginError').textContent=d.error;return}
+    if(d.user.role!=='admin'){document.querySelector('#adminLoginError').textContent='该账号非管理员';return}
+    token=d.token;user=d.user;
+    localStorage.setItem('gh_token',token);
+    localStorage.setItem('gh_user',JSON.stringify(user));
+    showAdminMain();
+  }catch(e){document.querySelector('#adminLoginError').textContent='网络错误';}
+}
+function adminLogout(){
+  localStorage.removeItem('gh_token');
+  localStorage.removeItem('gh_user');
+  token='';user=null;
+  showAdminLogin();
+}function init(){
+  token=localStorage.getItem('gh_token');
+  user=JSON.parse(localStorage.getItem('gh_user')||'null');
+  if(!token||!user||user.role!=='admin'){showAdminLogin();return}
   $('#displayName').textContent=user.username;
   $('#displayRole').textContent='管理员';
   bindEvents();
@@ -48,7 +70,7 @@ function bindEvents(){
   on('#ofPrice','input',calcActual);
   on('#ofCoupon','input',calcActual);
   // Logout
-  on('#btnLogout','click',function(){localStorage.removeItem('gh_token');localStorage.removeItem('gh_user');location.href='/'});
+  on('#btnLogout','click',function(){localStorage.removeItem('gh_token');localStorage.removeItem('gh_user');showAdminLogin()});
   // Close buttons
   document.querySelectorAll('.modal-close,.btn-cancel,.btn-mcancel').forEach(function(b){on(b,'click',closeModals)});
   [$('#memberModal'),$('#orderModal')].forEach(function(m){if(m)m.addEventListener('click',function(e){if(e.target===m)m.style.display='none'})});

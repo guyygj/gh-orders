@@ -6,7 +6,7 @@
 <link rel="stylesheet" href="/style.css">
 </head>
 <body>
-<header class="header"><h1>GH发家致富 · 管理后台</h1>
+<div class="login-page" id="adminLogin" style="display:none"><div class="login-card"><h1>GH 管理后台</h1><div class="subtitle">管理员登录</div><form id="adminLoginForm"><div class="form-group"><input type="text" id="adminLoginUser" placeholder="用户名"></div><div class="form-group"><input type="password" id="adminLoginPass" placeholder="密码"></div><div id="adminLoginError" class="form-error"></div><button type="submit" class="btn-submit">登 录</button></form></div></div><div id="adminMain" style="display:none"><header class="header"><h1>GH发家致富 · 管理后台</h1>
 <div class="user-area"><span id="displayRole" class="role-badge"></span><span id="displayName"></span><button class="btn-logout" id="btnLogout">退出</button></div>
 </header>
 <div class="app">
@@ -59,7 +59,6 @@
 <div class="id-card-preview" id="idPreview" style="display:none"><img id="idPreviewImg"></div>
 <div id="toast" class="toast" style="display:none"></div>
 
-<script src="/app.js"></script>
 <script src="/admin.js"></script>
-</body>
+</div></body>
 </html>
