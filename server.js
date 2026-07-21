@@ -196,7 +196,7 @@ app.get('/api/orders', auth, async (req, res) => {
   if (search) { w += ' AND (o.product_name LIKE ? OR o.tracking_no LIKE ?)'; p.push('%'+search+'%','%'+search+'%'); }
   const cnt = await db.get('SELECT COUNT(*) as total FROM orders o '+w, ...p);
   const list = await db.all('SELECT o.* FROM orders o '+w+' ORDER BY o.'+sortBy+' '+sortOrder+' LIMIT ? OFFSET ?', ...p, pageSize, (page-1)*pageSize);
-  res.json({ list, total: cnt.total, page, pageSize });
+  res.json({ list, total: parseInt(cnt.total), page, pageSize });
 });
 
 app.post('/api/orders', auth, async (req, res) => {
@@ -300,7 +300,7 @@ app.get('/api/admin/orders', auth, adminOnly, async (req, res) => {
   if (search) { w += ' AND (o.product_name LIKE ? OR o.tracking_no LIKE ?)'; p.push('%'+search+'%','%'+search+'%'); }
   const cnt = await db.get('SELECT COUNT(*) as total FROM orders o '+w, ...p);
   const list = await db.all('SELECT o.*, u.username FROM orders o LEFT JOIN users u ON o.user_id=u.id '+w+' ORDER BY o.'+sortBy+' '+sortOrder+' LIMIT ? OFFSET ?', ...p, pageSize, (page-1)*pageSize);
-  res.json({ list, total: cnt.total, page, pageSize });
+  res.json({ list, total: parseInt(cnt.total), page, pageSize });
 });
 
 app.get('/api/admin/orders/:id', auth, adminOnly, async (req, res) => {
