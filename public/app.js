@@ -17,9 +17,6 @@ function init(){
   if(token&&user){
     showMain();
     Promise.all([loadStats(),loadOrders(1)]).catch(function(){logout()});
-    if(user.role==='admin'&&!document.getElementById('adminLink')){
-      var b=$('#btnExport');if(b)b.insertAdjacentHTML('afterend',' <a href="/admin" id="adminLink" class="btn btn-default btn-sm">管理后台</a>');
-    }
   }else showLogin();
   bindEvents();
 }
@@ -57,7 +54,7 @@ function showLogin(){var lp=$('#loginPage');if(lp)lp.style.display='flex';var rp
 function showRegister(){var rp=$('#registerPage');if(rp)rp.style.display='flex';var lp=$('#loginPage');if(lp)lp.style.display='none';var ma=$('#mainApp');if(ma)ma.style.display='none'}
 function showMain(){var lp=$('#loginPage');if(lp)lp.style.display='none';var rp=$('#registerPage');if(rp)rp.style.display='none';var ma=$('#mainApp');if(ma)ma.style.display='block';var dn=$('#displayName');if(dn)dn.textContent=user.username;var dr=$('#displayRole');if(dr)dr.textContent=user.role==='admin'?'管理员':'成员';}
 
-async function handleLogin(e){e.preventDefault();var body={username:$('#loginUser').value,password:$('#loginPass').value};try{var res=await fetch(API+'/login',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});var d=await res.json();if(!res.ok){$('#loginError').textContent=d.error;return}token=d.token;user=d.user;localStorage.setItem('gh_token',token);localStorage.setItem('gh_user',JSON.stringify(user))}catch(e){$('#loginError').textContent='网络错误';return}showMain();Promise.all([loadStats(),loadOrders(1)]).catch(function(){logout()});if(user.role==='admin'&&!document.getElementById('adminLink')){var b=$('#btnExport');if(b)b.insertAdjacentHTML('afterend',' <a href="/admin" id="adminLink" class="btn btn-default btn-sm">管理后台</a>')}}
+async function handleLogin(e){e.preventDefault();var body={username:$('#loginUser').value,password:$('#loginPass').value};try{var res=await fetch(API+'/login',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});var d=await res.json();if(!res.ok){$('#loginError').textContent=d.error;return}token=d.token;user=d.user;localStorage.setItem('gh_token',token);localStorage.setItem('gh_user',JSON.stringify(user))}catch(e){$('#loginError').textContent='网络错误';return}showMain();Promise.all([loadStats(),loadOrders(1)]).catch(function(){logout()});}
 
 async function handleRegister(e){e.preventDefault();var fd=new FormData();fd.append('username',$('#regUser').value);fd.append('password',$('#regPass').value);if($('#regPass').value!==$('#regPass2').value)return $('#regError').textContent='密码不一致';if($('#regIdFront').files[0])fd.append('id_front',$('#regIdFront').files[0]);if($('#regIdBack').files[0])fd.append('id_back',$('#regIdBack').files[0]);try{var res=await fetch(API+'/register',{method:'POST',body:fd});var d=await res.json();if(!res.ok){$('#regError').textContent=d.error;return}toast('注册成功，等待审核');showLogin()}catch(e){$('#regError').textContent='网络错误'}}
 
