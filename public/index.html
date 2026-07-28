@@ -2,7 +2,7 @@
 <html lang="zh-CN">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1.0,user-scalable=no">
 <title>GH发家致富 · 撸货报单系统</title>
 <style>
 /* GH v3.1 — Dark Pro Client */
@@ -379,6 +379,7 @@ select{appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='ht
 .login-card{
   background: var(--card);
   width: 380px;
+  max-width: 90vw;
   border-radius: var(--radius);
   border: 1px solid var(--border);
   box-shadow: var(--shadow-lg);
@@ -473,6 +474,10 @@ select{appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='ht
 
 /* Responsive */
 @media (max-width:1023px){.stats-row{grid-template-columns:repeat(2,1fr)}}
+@media (max-width:900px){
+  .table-wrap{overflow-x:auto;-webkit-overflow-scrolling:touch}
+  .stats-row{grid-template-columns:repeat(2,1fr)}
+}
 @media (max-width:767px){
   .stats-row{grid-template-columns:repeat(2,1fr)}
   .app{padding:12px}
@@ -488,6 +493,13 @@ select{appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='ht
   .order-card .oc-actions{display:flex;gap:8px;margin-top:8px}
   .form-grid{grid-template-columns:1fr}
   .user-cards{grid-template-columns:1fr}
+  .btn{padding:10px 16px;font-size:13px}
+  .btn-sm{padding:8px 12px;font-size:12px}
+}
+@media (max-width:400px){
+  .stats-row{grid-template-columns:1fr}
+  .header{padding:0 12px}
+  .header h1{font-size:13px}
 }
 </style>
 </head>
