@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
 <head>
-<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1.0,user-scalable=no">
 <title>管理后台 — GH报单系统</title>
 <style>
 /* GH v3.1 — Dark Pro Admin */
@@ -432,6 +432,7 @@ select{appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='ht
 .login-card{
   background: var(--card);
   width: 380px;
+  max-width: 90vw;
   border-radius: var(--radius);
   border: 1px solid var(--border);
   box-shadow: var(--shadow-lg);
@@ -578,14 +579,15 @@ select{appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='ht
 @media (max-width:1023px){
   .stats-row{grid-template-columns:repeat(3,1fr)}
 }
+@media (max-width:900px){
+  .table-wrap{overflow-x:auto;-webkit-overflow-scrolling:touch}
+}
 @media (max-width:767px){
   .stats-row{grid-template-columns:repeat(2,1fr)}
   .app{padding:12px}
   .toolbar{flex-direction:column}
   .toolbar input{min-width:0}
   .modal{width:100vw;max-width:100vw;height:100vh;max-height:100vh;border-radius:0;border:none}
-  .table-wrap table{display:none}
-  .order-cards{display:flex;flex-direction:column;gap:10px}
   .order-card{
     background: var(--card);
     border-radius: var(--radius);
@@ -601,6 +603,15 @@ select{appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='ht
   .user-cards{grid-template-columns:1fr}
   .tabs{flex-direction:column;gap:2px}
   .tab-btn{border-radius:4px}
+  .table-wrap table{display:none}
+  .table-wrap .order-cards{display:flex;flex-direction:column;gap:10px}
+  .btn{padding:10px 16px;font-size:13px}
+  .btn-sm{padding:8px 12px;font-size:12px}
+}
+@media (max-width:400px){
+  .stats-row{grid-template-columns:1fr}
+  .header{padding:0 12px}
+  .header h1{font-size:13px}
 }
 </style>
 </head>
@@ -620,13 +631,13 @@ select{appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='ht
 <div id="tab-orders" class="tab-panel">
 <div class="stats-row"><div class="stat-card spend"><div class="stat-label">总花费</div><div class="stat-value" id="sSpend">0</div></div><div class="stat-card sold"><div class="stat-label">总卖出</div><div class="stat-value" id="sSold">0</div></div><div class="stat-card profit"><div class="stat-label">净利润</div><div class="stat-value" id="sProfit">0</div></div><div class="stat-card orders"><div class="stat-label">订单数</div><div class="stat-value" id="sOrders">0</div></div><div class="stat-card members"><div class="stat-label">成员数</div><div class="stat-value" id="sMembers">0</div></div></div>
 <div class="toolbar"><input type="text" id="osearch" placeholder="搜索商品/单号..."><select id="oplatform"><option value="">全部平台</option></select><select id="ostatus"><option value="">全部状态</option></select><select id="ouser"><option value="">全部用户</option></select><button class="btn btn-primary" id="oaddBtn">+ 新增订单</button><button class="btn btn-default" id="oexport">导出CSV</button></div>
-<div class="table-wrap"><table><thead><tr><th>用户</th><th>平台</th><th>商品</th><th>花费</th><th>卖出</th><th>利润</th><th>单号</th><th>状态</th><th>时间</th><th>操作</th></tr></thead><tbody id="otbody"></tbody></table><div class="empty-state" id="oempty" style="display:none"><div class="empty-icon"></div><div>暂无订单</div></div></div>
+<div class="table-wrap"><div id="orderCards" class="order-cards"></div><table><thead><tr><th>用户</th><th>平台</th><th>商品</th><th>花费</th><th>卖出</th><th>利润</th><th>单号</th><th>状态</th><th>时间</th><th>操作</th></tr></thead><tbody id="otbody"></tbody></table><div class="empty-state" id="oempty" style="display:none"><div class="empty-icon"></div><div>暂无订单</div></div></div>
 <div class="pagination" id="opagination"></div>
 </div>
 
 <!-- Reviews Tab -->
 <div id="tab-reviews" class="tab-panel" style="display:none">
-<div class="table-wrap"><table><thead><tr><th>用户名</th><th>身份证正面</th><th>身份证反面</th><th>注册时间</th><th>状态</th><th>操作</th></tr></thead><tbody id="rtbody"></tbody></table><div class="empty-state" id="rempty" style="display:none"><div class="empty-icon"></div><div>暂无待审核用户</div></div></div>
+<div class="table-wrap"><div id="reviewCards" class="order-cards"></div><table><thead><tr><th>用户名</th><th>身份证正面</th><th>身份证反面</th><th>注册时间</th><th>状态</th><th>操作</th></tr></thead><tbody id="rtbody"></tbody></table><div class="empty-state" id="rempty" style="display:none"><div class="empty-icon"></div><div>暂无待审核用户</div></div></div>
 </div>
 
 <!-- Members Tab -->
@@ -637,7 +648,7 @@ select{appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='ht
 
 <!-- Stats Tab -->
 <div id="tab-stats" class="tab-panel" style="display:none">
-<div class="table-wrap"><table><thead><tr><th>用户</th><th>订单数</th><th>总花费</th><th>总卖出</th><th>净利润</th><th>操作</th></tr></thead><tbody id="sttbody"></tbody></table></div>
+<div class="table-wrap"><div id="statsCards" class="order-cards"></div><table><thead><tr><th>用户</th><th>订单数</th><th>总花费</th><th>总卖出</th><th>净利润</th><th>操作</th></tr></thead><tbody id="sttbody"></tbody></table></div>
 </div>
 </div>
 
@@ -756,14 +767,20 @@ async function loadOrdersTab(){
 }
 
 function renderOrders(data){
-  var tbody=$('#otbody'),empty=$('#oempty');
-  if(!data.list||data.list.length===0){tbody.innerHTML='';empty.style.display='block';$('#opagination').innerHTML='';return}
+  var tbody=$('#otbody'),empty=$('#oempty'),cards=$('#orderCards');
+  if(!data.list||data.list.length===0){tbody.innerHTML='';if(cards)cards.innerHTML='';empty.style.display='block';$('#opagination').innerHTML='';return}
   empty.style.display='none';
-  var html='';
-  data.list.forEach(function(o){var pf=(o.selling_price||0)-o.actual_payment;html+='<tr><td>'+esc(o.username||'')+'</td><td><span class="tag tag-platform '+esc(o.platform)+'">'+esc(o.platform)+'</span></td><td>'+esc(o.product_name)+'</td><td class="amount spend">'+fmtMoney(o.actual_payment)+'</td><td class="amount">'+(o.selling_price?fmtMoney(o.selling_price):'-')+'</td><td class="amount profit '+(pf>=0?'pos':'neg')+'">'+(o.selling_price?fmtMoney(pf):'-')+'</td><td class="tracking">'+esc(o.tracking_no)+'</td><td><span class="status-tag '+esc(o.order_status)+'">'+esc(o.order_status)+'</span></td><td style="font-size:11px;color:var(--text3)">'+(o.created_at||'').slice(0,10)+'</td><td><button class="btn btn-default btn-sm btn-oedit" data-id="'+o.id+'">编辑</button> <button class="btn btn-default btn-sm btn-odel" data-id="'+o.id+'" style="color:var(--red)">删除</button></td></tr>'});
+  var html='',cardsHtml='';
+  data.list.forEach(function(o){var pf=(o.selling_price||0)-o.actual_payment;
+    html+='<tr><td>'+esc(o.username||'')+'</td><td><span class="tag tag-platform '+esc(o.platform)+'">'+esc(o.platform)+'</span></td><td>'+esc(o.product_name)+'</td><td class="amount spend">'+fmtMoney(o.actual_payment)+'</td><td class="amount">'+(o.selling_price?fmtMoney(o.selling_price):'-')+'</td><td class="amount profit '+(pf>=0?'pos':'neg')+'">'+(o.selling_price?fmtMoney(pf):'-')+'</td><td class="tracking">'+esc(o.tracking_no)+'</td><td><span class="status-tag '+esc(o.order_status)+'">'+esc(o.order_status)+'</span></td><td style="font-size:11px;color:var(--text3)">'+(o.created_at||'').slice(0,10)+'</td><td><button class="btn btn-default btn-sm btn-oedit" data-id="'+o.id+'">编辑</button> <button class="btn btn-default btn-sm btn-odel" data-id="'+o.id+'" style="color:var(--red)">删除</button></td></tr>';
+    cardsHtml+='<div class="order-card"><div class="oc-title">'+esc(o.product_name)+'</div><div class="oc-tags"><span class="tag tag-platform '+esc(o.platform)+'">'+esc(o.platform)+'</span><span class="status-tag '+esc(o.order_status)+'">'+esc(o.order_status)+'</span></div><div class="oc-row"><span>用户</span><span class="val">'+esc(o.username||'')+'</span></div><div class="oc-row"><span>花费</span><span class="val" style="color:var(--amber)">'+fmtMoney(o.actual_payment)+'</span></div><div class="oc-row"><span>卖出</span><span class="val">'+(o.selling_price?fmtMoney(o.selling_price):'-')+'</span></div><div class="oc-row"><span>利润</span><span class="val" style="color:'+(pf>=0?'var(--green)':'var(--red)')+'">'+(o.selling_price?fmtMoney(pf):'-')+'</span></div><div class="oc-row"><span>单号</span><span class="val">'+esc(o.tracking_no)+'</span></div><div class="oc-actions"><button class="btn btn-default btn-sm btn-oedit" data-id="'+o.id+'">编辑</button> <button class="btn btn-default btn-sm btn-odel" data-id="'+o.id+'" style="color:var(--red)">删除</button></div></div>';
+  });
   tbody.innerHTML=html;
+  if(cards)cards.innerHTML=cardsHtml;
   tbody.querySelectorAll('.btn-oedit').forEach(function(b){b.addEventListener('click',function(){openOrderModal(b.dataset.id)})});
   tbody.querySelectorAll('.btn-odel').forEach(function(b){b.addEventListener('click',function(){cf(function(){fetch(API+'/admin/orders/'+b.dataset.id,{method:'DELETE',headers:{Authorization:'Bearer '+token}}).then(function(){loadOrdersTab();toast('已删除')})},'确认删除该订单？')})});
+  if(cards){cards.querySelectorAll('.btn-oedit').forEach(function(b){b.addEventListener('click',function(){openOrderModal(b.dataset.id)})});
+  cards.querySelectorAll('.btn-odel').forEach(function(b){b.addEventListener('click',function(){cf(function(){fetch(API+'/admin/orders/'+b.dataset.id,{method:'DELETE',headers:{Authorization:'Bearer '+token}}).then(function(){loadOrdersTab();toast('已删除')})},'确认删除该订单？')})})}
   renderPagination(data.page,data.total,data.pageSize);
 }
 
@@ -776,7 +793,18 @@ function renderPagination(page,total,pageSize){
 
 // Reviews Tab
 async function loadReviewsTab(){
-  try{var res=await fetch(API+'/admin/reviews',{headers:{Authorization:'Bearer '+token}});var list=await res.json();var html='';list.forEach(function(u){html+='<tr><td>'+esc(u.username)+'</td><td>'+(u.id_card_front?'<img class="review-id-card" src="/uploads/id_cards/'+u.id_card_front+'" onclick="var p=document.getElementById(\'idPreview\');var i=document.getElementById(\'idPreviewImg\');i.src=this.src;p.style.display=\'flex\'">':'无')+'</td><td>'+(u.id_card_back?'<img class="review-id-card" src="/uploads/id_cards/'+u.id_card_back+'" onclick="var p=document.getElementById(\'idPreview\');var i=document.getElementById(\'idPreviewImg\');i.src=this.src;p.style.display=\'flex\'">':'无')+'</td><td style="font-size:11px;color:var(--text3)">'+(u.created_at||'').slice(0,10)+'</td><td><span class="status-tag">'+(u.status==='pending'?'待审核':'已拒绝')+'</span></td><td><button class="btn btn-default btn-sm" style="color:var(--green)" data-rid="'+u.id+'" data-act="approve">通过</button> <button class="btn btn-default btn-sm" style="color:var(--red)" data-rid="'+u.id+'" data-act="reject">拒绝</button></td></tr>'});$('#rtbody').innerHTML=html||'';$('#rempty').style.display=list.length?'none':'block';document.querySelectorAll('button[data-act]').forEach(function(b){b.addEventListener('click',async function(){var id=b.dataset.rid,act=b.dataset.act;await fetch(API+'/admin/reviews/'+id+'/'+act,{method:'POST',headers:{Authorization:'Bearer '+token}});loadReviewsTab();toast(act==='approve'?'已通过':'已拒绝')})})}catch(e){}
+  try{var res=await fetch(API+'/admin/reviews',{headers:{Authorization:'Bearer '+token}});var list=await res.json();var html='',cardsHtml='';list.forEach(function(u){
+    html+='<tr><td>'+esc(u.username)+'</td><td>'+(u.id_card_front?'<img class="review-id-card" src="/uploads/id_cards/'+u.id_card_front+'" onclick="adminPreview(this.src)">':'无')+'</td><td>'+(u.id_card_back?'<img class="review-id-card" src="/uploads/id_cards/'+u.id_card_back+'" onclick="adminPreview(this.src)">':'无')+'</td><td style="font-size:11px;color:var(--text3)">'+(u.created_at||'').slice(0,10)+'</td><td><span class="status-tag">'+(u.status==='pending'?'待审核':'已拒绝')+'</span></td><td><button class="btn btn-default btn-sm" style="color:var(--green)" data-rid="'+u.id+'" data-act="approve">通过</button> <button class="btn btn-default btn-sm" style="color:var(--red)" data-rid="'+u.id+'" data-act="reject">拒绝</button></td></tr>';
+    var hasFront=u.id_card_front,hasBack=u.id_card_back;
+    cardsHtml+='<div class="order-card"><div class="oc-title">'+esc(u.username)+'</div><div class="oc-tags"><span class="status-tag">'+(u.status==='pending'?'待审核':'已拒绝')+'</span></div><div class="oc-row"><span>注册时间</span><span class="val">'+(u.created_at||'').slice(0,10)+'</span></div><div class="oc-row"><span>身份证正面</span><span class="val">'+(hasFront?'<a href="javascript:adminPreview(\'/uploads/id_cards/'+u.id_card_front+'\')" style="color:var(--navy)">查看</a>':'无')+'</span></div><div class="oc-row"><span>身份证反面</span><span class="val">'+(hasBack?'<a href="javascript:adminPreview(\'/uploads/id_cards/'+u.id_card_back+'\')" style="color:var(--navy)">查看</a>':'无')+'</span></div><div class="oc-actions"><button class="btn btn-default btn-sm" style="color:var(--green)" data-rid="'+u.id+'" data-act="approve">通过</button> <button class="btn btn-default btn-sm" style="color:var(--red)" data-rid="'+u.id+'" data-act="reject">拒绝</button></div></div>';
+  });
+  $('#rtbody').innerHTML=html||'';
+  var rc=$('#reviewCards');if(rc)rc.innerHTML=cardsHtml||'';
+  $('#rempty').style.display=list.length?'none':'block';
+  var bindReviewBtns=function(el){if(!el)return;el.querySelectorAll('button[data-act]').forEach(function(b){b.addEventListener('click',async function(){var id=b.dataset.rid,act=b.dataset.act;await fetch(API+'/admin/reviews/'+id+'/'+act,{method:'POST',headers:{Authorization:'Bearer '+token}});loadReviewsTab();toast(act==='approve'?'已通过':'已拒绝')})})};
+  bindReviewBtns($('#rtbody'));
+  bindReviewBtns($('#reviewCards'));
+  }catch(e){}
 }
 
 // Members Tab
@@ -788,7 +816,13 @@ async function handleAddMember(e){e.preventDefault();var u=$('#mUser').value.tri
 
 // Stats Tab
 async function loadStatsTab(){
-  try{var res=await fetch(API+'/admin/stats',{headers:{Authorization:'Bearer '+token}});var d=await res.json();var mems=d.members||[];var html='';mems.forEach(function(m){var pf=m.profit||0;html+='<tr><td>'+esc(m.username)+'</td><td>'+(m.oCnt||0)+'</td><td class="amount spend">'+fmtMoney(m.spend||0)+'</td><td class="amount">'+fmtMoney(m.sold||0)+'</td><td class="amount profit '+(pf>=0?'pos':'neg')+'">'+fmtMoney(pf)+'</td><td><span class="tag tag-platform" style="background:#f5f5f5;color:var(--text3)">'+(m.role||'user')+'</span></td></tr>'});$('#sttbody').innerHTML=html||'<tr><td colspan="6" style="text-align:center;color:var(--text3)">暂无成员数据</td></tr>'}catch(e){}
+  try{var res=await fetch(API+'/admin/stats',{headers:{Authorization:'Bearer '+token}});var d=await res.json();var mems=d.members||[];var html='',cardsHtml='';mems.forEach(function(m){var pf=m.profit||0;
+    html+='<tr><td>'+esc(m.username)+'</td><td>'+(m.oCnt||0)+'</td><td class="amount spend">'+fmtMoney(m.spend||0)+'</td><td class="amount">'+fmtMoney(m.sold||0)+'</td><td class="amount profit '+(pf>=0?'pos':'neg')+'">'+fmtMoney(pf)+'</td><td><span class="tag tag-platform" style="background:#f5f5f5;color:var(--text3)">'+(m.role||'user')+'</span></td></tr>';
+    cardsHtml+='<div class="order-card"><div class="oc-title">'+esc(m.username)+'</div><div class="oc-tags"><span class="tag tag-platform" style="background:#f5f5f5;color:var(--text3)">'+(m.role||'user')+'</span></div><div class="oc-row"><span>订单数</span><span class="val">'+(m.oCnt||0)+'</span></div><div class="oc-row"><span>花费</span><span class="val" style="color:var(--amber)">'+fmtMoney(m.spend||0)+'</span></div><div class="oc-row"><span>卖出</span><span class="val" style="color:var(--green)">'+fmtMoney(m.sold||0)+'</span></div><div class="oc-row"><span>利润</span><span class="val" style="color:'+(pf>=0?'var(--green)':'var(--red)')+'">'+fmtMoney(pf)+'</span></div></div>';
+  });
+  $('#sttbody').innerHTML=html||'<tr><td colspan="6" style="text-align:center;color:var(--text3)">暂无成员数据</td></tr>';
+  var sc=$('#statsCards');if(sc)sc.innerHTML=cardsHtml||'';
+  }catch(e){}
 }
 
 // Order Modal
